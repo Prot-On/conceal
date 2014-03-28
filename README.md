@@ -11,25 +11,36 @@ and options, Conceal prefers to abstract this choice and use sane defaults.
 Thus Conceal is not a general purpose crypto library, however it aims to provide 
 useful functionality.
 
+##Why this fork?##
+
+This modified version of Conceal just includes 1 algorithm, AES CBC with standard 
+padding PKCS#5, instead of AES GCM and HMAC-SHA1.
+
+Depending on the key size it will use the correct AES version (16 bytes - AES 128, 
+24 - AES 192, 32 - AES 256), remember that iv have always the same size 16 bytes.
+
+This library is geared to being used with streams, both Cipher and decipher is done
+via InputStreams but it should be easy to port it to OutputStreams if needed.
+
+BetterCipherInputStream is a sort of CipherStream but greatly improves the speed of 
+any cipher used with it, it is almost the same as the main Conceal one but added support
+for padded ciphers.
+
+Test and benchmarks has not been ported and as Buck is not compatible with windows, 
+the build system would not work.
+
 ##Quick start##
 
-####Building Conceal####
+####Building java libaries####
 ```bash
-buck build :crypto
+gradle build
 ```
 
-We have very limited support for gradle at the moment that only
-build the java part of Conceal.
-
-####Running Benchmarks####
+####Building native libaries####
 ```bash
-./benchmarks/run \
-  benchmarks/src/com/facebook/crypto/benchmarks/CipherReadBenchmark.java \
-  -- -Dsize=102400
+cd /native/crypto
+ndk-build APP_BUILD_SCRIPT=Android.mk APP_ABI=all NDK_PROJECT_PATH=.
 ```
-
-This script runs vogar with caliper benchmarks.
-You can also specify all the options caliper provides.
 
 ######An aside on KitKat######
 > Conceal predates Jellybean 4.3. On KitKat, Android changed the provider for 
@@ -38,18 +49,6 @@ You can also specify all the options caliper provides.
 > (see BetterCipherInputStream), the default implementation is competitive against 
 > Conceal. On older phones, Conceal is faster than the system provided libraries.
 
-####Running unit tests####
-```bash
-buck test javatests/com/facebook/crypto:crypto
-```
-
-####Running integration tests####
-```bash
-./instrumentTest/crypto/run
-```
-
-Since Conceal uses native libraries, the only way to run a test on the entire
-encryption process is using integration tests.
 
 ##Usage##
 
@@ -57,9 +56,7 @@ encryption process is using integration tests.
 ```java
 // Creates a new Crypto object with default implementations of 
 // a key chain as well as native library.
-Crypto crypto = new Crypto(
-  new SharedPrefsBackedKeyChain(context),
-  new SystemNativeCryptoLibrary());
+Crypto crypto = Crypto.getInstance();
 
 // Check for whether the crypto functionality is available
 // This might fail if Android does not load libaries correctly.
@@ -67,18 +64,24 @@ if (!crypto.isAvailable()) {
   return;
 }
 
-OutputStream fileStream = new BufferedOutputStream(
+OutputStream fileStream = new BufferedInputStream(
   new FileOutputStream(file));
 
-// Creates an output stream which encrypts the data as
-// it is written to it and writes it out to the file.
-OutputStream outputStream = crypto.getCipherOutputStream(
-  fileStream,
-  entity);
+// Creates an input stream which encrypts the data as
+// it is read from it.
+InputStream inputStream = crypto.getAESCipherInputStream(
+  fileStream, iv, key);
 
-// Write plaintext to it.
-outputStream.write(plainText);
-outputStream.close();
+// Read into a byte array.
+int read;
+byte[] buffer = new byte[1024];
+  
+// You must read the entire stream to completion.
+// Due to padding and stream internals it is not possible to
+// read the stream in one go.
+while ((read = inputStream.read(buffer)) != -1) {
+  out.write(buffer, 0, read);
+}
 ```
 
 ####Decryption####
@@ -88,54 +91,20 @@ FileInputStream fileStream = new FileInputStream(file);
 
 // Creates an input stream which decrypts the data as
 // it is read from it.
-InputStream inputStream = crypto.getCipherInputStream(
-  fileStream,
-  entity);
+InputStream inputStream = crypto.getAESDecipherInputStream(
+  fileStream, iv, key);
 
 // Read into a byte array.
 int read;
 byte[] buffer = new byte[1024];
 
 // You must read the entire stream to completion.
-// The verification is done at the end of the stream.
-// Thus not reading till the end of the stream will cause
-// a security bug. For safety, you should not
-// use any of the data until it's been fully read or throw
-// away the data if an exception occurs.
+// Due to padding and stream internals it is not possible to
+// read the stream in one go.
 while ((read = inputStream.read(buffer)) != -1) {
   out.write(buffer, 0, read);
 }
 
-inputStream.close();
-```
-
-If you don't have a lot of data to encrypt, you could
-use the convenience functions:
-
-```java
-byte[] cipherText = crypto.encrypt(plainText);
-
-byte[] plainText = crypto.decrypt(cipherText);
-```
-
-####Integrity####
-```java
-OutputStream outputStream = crypto.getMacOutputStream(fileStream, entity);
-outputStream.write(plainTextBytes);
-outputStream.close();
-
-InputStream inputStream = crypto.getMacInputStream(fileStream, entity);
-
-// Will throw an exception if mac verification fails.
-// You must read the entire stream to completion.
-// The verification is done at the end of the stream.
-// Thus not reading till the end of the stream will cause
-// a security bug. For safety, you should not
-// use any of the data until it's been fully read or throw
-// away the data if an exception occurs.
-while((read = inputStream.read(buffer)) != -1) {
-  out.write(buffer, 0, read);
-}
 inputStream.close();
 ```
 

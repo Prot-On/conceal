@@ -18,7 +18,8 @@ import com.facebook.crypto.exception.CryptoInitializationException;
  * An implementation of {@link NativeCryptoLibrary} that uses
  * {@link System#loadLibrary(String)} to load the crypto libraries.
  */
-public class SystemNativeCryptoLibrary implements NativeCryptoLibrary {
+public enum SystemNativeCryptoLibrary implements NativeCryptoLibrary {
+	INSTANCE;
 
   private static final ArrayList<String> LIBS = new ArrayList<String>() {{
     add("cryptox");
@@ -29,7 +30,11 @@ public class SystemNativeCryptoLibrary implements NativeCryptoLibrary {
   private boolean mLibrariesLoaded;
   private volatile UnsatisfiedLinkError mLinkError;
 
-  public SystemNativeCryptoLibrary() {
+  public static SystemNativeCryptoLibrary getInstance(){
+      return SystemNativeCryptoLibrary.INSTANCE;
+  }
+  
+  SystemNativeCryptoLibrary() {
     mLoadLibraries = true;
     mLibrariesLoaded = false;
     mLinkError = null;

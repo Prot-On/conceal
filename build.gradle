@@ -4,15 +4,15 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.7.1+'
+        classpath 'com.android.tools.build:gradle:0.9.0+'
     }
 }
 
 apply plugin: 'android-library'
-
+archivesBaseName  = "conceal"
 android {
     compileSdkVersion 19
-    buildToolsVersion "19.0.0"
+    buildToolsVersion "19.0.1"
 
     defaultConfig {
       minSdkVersion 9
@@ -22,7 +22,7 @@ android {
     sourceSets {
       main {
         manifest.srcFile 'AndroidManifest.xml'
-        java.srcDirs = ['java'] 
+        java.srcDirs = ['java']
         jni.srcDirs = []
       }
     }
