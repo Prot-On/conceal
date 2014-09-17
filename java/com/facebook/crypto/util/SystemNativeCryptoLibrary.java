@@ -22,6 +22,7 @@ public enum SystemNativeCryptoLibrary implements NativeCryptoLibrary {
 	INSTANCE;
 
   private static final ArrayList<String> LIBS = new ArrayList<String>() {{
+    add("gnustl_shared");
     add("cryptox");
     add("conceal");
   }};

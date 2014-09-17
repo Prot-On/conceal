@@ -32,19 +32,25 @@ common_c_flags := \
 common_src_files := \
   crypto/aes/aes_core.c \
   crypto/aes/aes_cbc.c \
+  crypto/aes/aes_cfb.c \
   crypto/aes/aes_ctr.c \
+  crypto/aes/aes_ecb.c \
   crypto/aes/aes_misc.c \
   crypto/aes/aes_wrap.c \
   crypto/asn1/ameth_lib.c \
   crypto/bio/b_print.c \
   crypto/bio/bio_lib.c \
+  crypto/bio/bss_mem.c \
+  crypto/buffer/buffer.c \
   crypto/buffer/buf_str.c \
   crypto/cryptlib.c \
   crypto/cversion.c \
   crypto/ebcdic.c \
   crypto/err/err.c \
   crypto/evp/digest.c \
+  crypto/evp/bio_b64.c \
   crypto/evp/e_aes.c \
+  crypto/evp/encode.c \
   crypto/evp/evp_enc.c \
   crypto/evp/evp_lib.c \
   crypto/evp/m_sha1.c \
@@ -57,6 +63,7 @@ common_src_files := \
   crypto/mem_clr.c \
   crypto/mem_dbg.c \
   crypto/modes/cbc128.c \
+  crypto/modes/cfb128.c \
   crypto/modes/ctr128.c \
   crypto/modes/gcm128.c \
   crypto/o_dir.c \
@@ -70,9 +77,11 @@ common_src_files := \
   crypto/rand/rand_unix.c \
   crypto/sha/sha1_one.c \
   crypto/sha/sha1dgst.c \
+  crypto/sha/sha512.c \
   crypto/sha/sha_dgst.c \
   crypto/stack/stack.c \
   crypto/uid.c \
+
 
 local_c_includes += \
   $(LOCAL_PATH) \
@@ -98,9 +107,11 @@ arm_src_files := \
   crypto/bn/asm/armv4-mont.S \
   crypto/modes/asm/ghash-armv4.S \
   crypto/sha/asm/sha1-armv4-large.S \
+  crypto/sha/asm/sha512-armv4.S \  
 
 arm_exclude_files := \
   crypto/aes/aes_core.c \
+  crypto/sha/asm/sha512-586.S \  
 
 aarch64_c_flags := \
   -DOPENSSL_NO_ASM \
@@ -134,6 +145,7 @@ x86_src_files := \
   crypto/bn/asm/x86-mont.S \
   crypto/modes/asm/ghash-x86.S \
   crypto/sha/asm/sha1-586.S \
+  crypto/sha/asm/sha512-586.S \
   crypto/x86cpuid.S \
 
 x86_exclude_files := \
@@ -144,6 +156,7 @@ x86_exclude_files := \
   crypto/des/des_enc.c \
   crypto/des/fcrypt_b.c \
   crypto/mem_clr.c \
+  crypto/sha/asm/sha512-x86_64.S \  
 
 x86_64_c_flags := \
   -DAES_ASM \
@@ -173,6 +186,7 @@ x86_64_src_files := \
   crypto/md5/asm/md5-x86_64.S \
   crypto/modes/asm/ghash-x86_64.S \
   crypto/sha/asm/sha1-x86_64.S \
+  crypto/sha/asm/sha512-x86_64.S \
   crypto/x86_64cpuid.S \
 
 x86_64_exclude_files := \
