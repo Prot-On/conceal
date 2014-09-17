@@ -31,6 +31,11 @@ the build system would not work.
 
 ##Quick start##
 
+
+####Use prebuilt libraries####
+Just download and add to your proyect the prebuilt libraries from the [release folder](release)
+
+
 ####Building java libaries####
 ```bash
 gradle build
